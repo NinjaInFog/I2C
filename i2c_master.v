@@ -5,9 +5,10 @@ module i2c_master #(parameter frame_numb = 1,
 	input  					i_rst_n,  
 	input [Data_size-1: 0]  i_Data,
 	input  					i_rw,
+	input 					i_start,
 	inout  					io_sda,
 	output 					o_done,
-	output 					o_data
+	output 					o_data,
 	output reg 				o_scl	
 );
 
@@ -32,8 +33,10 @@ always @(posedge i_clk or negedge i_rst_n) begin
  	end else begin
  		 case (state)
  		 	IDLE: begin
- 		 		state = START;
-
+ 		 		if(start == 1)
+ 		 			state = START;
+ 		 		else
+ 		 			state = IDLE;
  		 	end
 
  		 	START: begin
