@@ -15,7 +15,7 @@ module i2c_master #(parameter frame_numb = 1,
 localparam IDLE = 0, START = 1, ADDR = 2, RW = 3, ADDR_ACK = 4,
 		   W_SAMPLE = 5, R_SAMPLE = 6, M_ACK = 7, S_ACK = 8, STOP = 9;
 
-
+wire scl_en;
 reg [3:0] 				state;
 reg [5:0]  frame_count = 0;// добавить log
 reg serial_Data_out;
@@ -24,6 +24,21 @@ assign o_scl = (state == IDLE || state == START || state == STOP) ? 1'b1 : i_clk
 
 assign io_sda = (we) ? serial_Data_out : 1'bz;
 assign serial_Data_in = (~we) ? io_sda : 1'bx;
+
+assign o_scl = (scl_en) ? 1'b1 : ~i_clk;
+
+always @(negedge i_clk or negedge i_rst_n) begin 
+	if(~i_rst_n) begin
+		scl_en <= 1;
+	end else begin
+		 if(state == IDLE || state == START || state == STOP) begin
+		 	scl_en <= 1'b1;
+		 end
+		 else
+		 	scl_en <= 1'b0;
+	end
+end
+
 
 always @(posedge i_clk or negedge i_rst_n) begin 
  	if(~i_rst_n) begin
