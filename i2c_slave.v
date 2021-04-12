@@ -1,14 +1,15 @@
 module i2c_slave #(localparam Data_size = 8,
 				   localparam Addr_size = 8) 
 (
-	input 				  i_clk,    // Clock
-	input 				  i_rst_n, 
-	input [Data_size-1:0] i_Data,
-	input [Addr_size-1:0] i_Addr,
-	input 				  i_scl,
-	input				  i_start,
-	inout 				  io_sda,	
-	output				  o_done
+	input 				   i_clk,    // Clock
+	input 				   i_rst_n, 
+	input [Data_size-1:0]  i_Data,
+	input [Addr_size-1:0]  i_Addr,
+	input 				   i_scl,
+	input				   i_start,
+	inout 				   io_sda,	
+	output				   o_done,
+	output reg [Data_size-1:0] o_data
 );
 
 localparam IDLE = 0, START = 1, ADDR = 2, RW = 3, ADDR_ACK = 4,
@@ -94,7 +95,14 @@ always @(posedge clk or negedge rst_n) begin : proc_
 		 	end
 
 		 	R_SAMPLE: begin
-
+		 		o_data[count] <= Serial_Data_in;
+		 		if(count == (Addr_size-1)) begin
+		 			count <= 0;
+		 			state <= S_ACK;
+		 		end else begin
+		 			count <= count + 1;
+		 			state <= R_SAMPLE;
+		 		end
 		 	end
 
 		 	default : /* default */;
